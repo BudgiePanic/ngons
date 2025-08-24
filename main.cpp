@@ -42,14 +42,14 @@
 	Progress goals:
 	- (DONE) Add the PGE extension for panning and zooming, integrate it into the application
           - https://www.youtube.com/watch?v=OqfHIujOvnE
-	- Draw state string to screen for visibility and explainability
+	- (TODO) Draw state string to screen for visibility and explainability
           - editor: [[1]] place points [2] select and move points [3] place ball [4] place exits [5] select polygons [enter] confirm polygon [backspace] delete | selected item { ... }
           - play: [a] go left [d] go right [space] jump | [esc] back to editor | [backspace] restart | ball params { ... }
-	- Always Init with a basic test level
+	- (DONE) Always Init with a basic test level
 	  - achieve via play mode always writing some basic level geo to the application game state
-	- Implement Play mode
-	- Then implement the editor
-        - Stretch goals:
+	- (TODO) Implement Play mode
+	- (TODO) Then implement the editor
+        - (TODO) Stretch goals:
           - draw nearest selectable item with highlight, given input mode
           - control other shapes (Square, rectangle, pill shape, triangle, etc)
 */
@@ -79,6 +79,9 @@ namespace ngon {
 		}
 		const double radius = 1.0;
 	};
+		// If the Ball overlaps the Goal then play a simple animation:
+		// scale the ball down overtime, and sinusoidal motion rotate it around the goal
+		// slowly lerp ball position to goal middle
 		olc::vd2d position;
 		void tick(float fElapsedTime) {
 
@@ -214,6 +217,7 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// handle panning
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
+	// Status info
 	PixelGameEngine::DrawString({ 0,0 }, applicationState->GetStateString());
 	PixelGameEngine::DrawString({ 0,10 }, ngon::StringFromGameState(&this->state));
 	// Polygons
