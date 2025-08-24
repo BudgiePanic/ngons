@@ -79,7 +79,7 @@ namespace ngon {
 		void tick(float fElapsedTime) {
 
 		}
-		const double radius = 1.0;
+		static constexpr double radius = 0.5;
 	};
 	class Goal {
 	public:
@@ -92,6 +92,7 @@ namespace ngon {
 		void tick(float fElapsedTime) {
 
 		}
+		static constexpr double radius = 0.5;
 	};
 	class Goal;
 	struct GameState {
