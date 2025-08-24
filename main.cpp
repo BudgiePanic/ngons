@@ -40,12 +40,18 @@
 
 /*
 	Progress goals:
-	- Add the PGE extension for panning and zooming, integrate it into the application
+	- (DONE) Add the PGE extension for panning and zooming, integrate it into the application
+          - https://www.youtube.com/watch?v=OqfHIujOvnE
 	- Draw state string to screen for visibility and explainability
+          - editor: [[1]] place points [2] select and move points [3] place ball [4] place exits [5] select polygons [enter] confirm polygon [backspace] delete | selected item { ... }
+          - play: [a] go left [d] go right [space] jump | [esc] back to editor | [backspace] restart | ball params { ... }
 	- Always Init with a basic test level
 	  - achieve via play mode always writing some basic level geo to the application game state
 	- Implement Play mode
 	- Then implement the editor
+        - Stretch goals:
+          - draw nearest selectable item with highlight, given input mode
+          - control other shapes (Square, rectangle, pill shape, triangle, etc)
 */
 
 namespace ngon {
@@ -57,7 +63,7 @@ namespace ngon {
 		std::vector<olc::vd2d> points;
 		Polygon() = default;
 	};
-	// TODO consider moving these to their own *.h and *.cpp files to clean up this file
+	// TODO consider moving these to their own *.h and *.cpp files to clean up this file, instead of forward declaring
 	/**
 	* The player controls the ball in play mode
 	*/
