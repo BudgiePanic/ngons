@@ -178,12 +178,14 @@ namespace ngon {
 			// TEMP
 			// Write test level data to the application
 			// Later on, all we would do is nothing. Just start ticking straight away
-			this->app->state = {
+			this->app->state = ngon::GameState {
 				{ 
 					ngon::Polygon({ {0,0},{3,0},{4,1},{5,0},{7,0},{7,1},{8,1},{8,-3},{-2,-3},{-1,1} }),
 				},
-				{ ngon::Goal(), },
-				{ ngon::Ball() }
+				{ 
+					ngon::Goal({6.2, 0.5}),
+				},
+				ngon::Ball({0, 1.7})
 			};
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
