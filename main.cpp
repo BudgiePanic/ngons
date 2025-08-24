@@ -161,6 +161,7 @@ namespace ngon {
 		void OnStateStart() override {
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
+			app->view.HandlePanAndZoom(); // not sure how to update to mouse 2 instead of middle mouse button
 			return true;
 		}
 		std::string GetStateString() override {
@@ -211,7 +212,6 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 		applicationState->OnStateStart();
 	}
 	// handle panning
-	view.HandlePanAndZoom(); // not sure how to update to mouse 2 instead of middle mouse button
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
 	PixelGameEngine::DrawString({ 0,0 }, applicationState->GetStateString());
