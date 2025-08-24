@@ -62,6 +62,7 @@ namespace ngon {
 	public:
 		std::vector<olc::vd2d> points;
 		Polygon() = default;
+		Polygon(std::initializer_list<olc::vd2d> initialPoints) : points(initialPoints) {}
 	};
 	// TODO consider moving these to their own *.h and *.cpp files to clean up this file, instead of forward declaring
 	/**
@@ -167,6 +168,11 @@ namespace ngon {
 			// Write test level data to the application
 			// Later on, all we would do is nothing. Just start ticking straight away
 			this->app->state = {
+				{ 
+					ngon::Polygon({ {0,0},{3,0},{4,1},{5,0},{7,0},{7,1},{8,1},{8,-3},{-2,-3},{-1,1} }),
+				},
+				{ ngon::Goal(), },
+				{ ngon::Ball() }
 			};
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
