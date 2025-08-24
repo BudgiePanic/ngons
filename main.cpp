@@ -189,6 +189,10 @@ namespace ngon {
 			};
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
+			// Set the view to center on the ball position
+			ngon::Ball& ball = this->app->state.ball;
+			olc::vd2d ballWorldPos = ball.position;
+			// how to center the view on the ball position? TODO
 			return true;
 		}
 		std::string GetStateString() override {
