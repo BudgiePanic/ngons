@@ -69,6 +69,16 @@ namespace ngon {
 	* The player controls the ball in play mode
 	*/
 	class Ball {
+	public:
+		olc::vd2d position;
+		void applyForce(olc::vd2d) {
+		
+		}
+		void tick(float fElapsedTime) {
+
+		}
+		const double radius = 1.0;
+	};
 		olc::vd2d position;
 		void tick(float fElapsedTime) {
 
