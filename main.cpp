@@ -216,6 +216,29 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// Draw
 	PixelGameEngine::DrawString({ 0,0 }, applicationState->GetStateString());
 	PixelGameEngine::DrawString({ 0,10 }, ngon::StringFromGameState(&this->state));
+	// Polygons
+	for (const auto &poly : this->state.shapes) {
+		const size_t numbPoints = poly.points.size();
+		if (numbPoints < 2) {
+			continue;
+		}
+		olc::vf2d start = poly.points[0];
+		olc::vf2d end = poly.points[numbPoints - 1];
+		view.DrawLineDecal(start, end, olc::WHITE);
+		for (size_t idx = 0; idx < numbPoints - 1; idx++) {
+			olc::vf2d start = poly.points[idx];
+			olc::vf2d end = poly.points[idx + 1];
+			view.DrawLineDecal(start, end, olc::WHITE);
+		}
+	}
+	// Ball
+	view.DrawCircle(state.ball.position, state.ball.radius, olc::WHITE);
+	// TODO rotate mini circle by rotation radians then translate to ball location and draw that too
+	// Goals
+	// TODO make the goals look cooler with some animated property that changes over time
+	for (const ngon::Goal& goal : state.goals) {
+		view.DrawCircle(goal.position, goal.radius, olc::DARK_MAGENTA);
+	}
 	return true;
 }
 
