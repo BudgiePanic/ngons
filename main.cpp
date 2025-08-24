@@ -254,6 +254,7 @@ bool NgonPuzzle::OnUserCreate() {
 	viewArea.y = viewArea.y / 2.0;
 	view.SetWorldOffset(viewArea);
 	view.SetWorldScale({1,-1});
+	// TODO help wanted - zoom in. Initial zoom is insufficient.
 
 	editing = new ngon::Editing(this);
 	applicationState = editing;
