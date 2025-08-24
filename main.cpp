@@ -244,7 +244,14 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 
 bool NgonPuzzle::OnUserCreate() {
 	// Called once at the start, so create things here
+
 	view.Initialise(GetScreenSize());
+	olc::vi2d viewArea(GetScreenSize());
+	viewArea.x = -viewArea.x / 2.0;
+	viewArea.y = viewArea.y / 2.0;
+	view.SetWorldOffset(viewArea);
+	view.SetWorldScale({1,-1});
+
 	editing = new ngon::Editing(this);
 	applicationState = editing;
 	applicationState->OnStateStart();
