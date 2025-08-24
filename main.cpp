@@ -70,6 +70,8 @@ namespace ngon {
 	*/
 	class Ball {
 	public:
+		Ball() = default;
+		Ball(olc::vd2d pos) : position(pos) { }
 		olc::vd2d position;
 		void applyForce(olc::vd2d) {
 		
@@ -79,6 +81,10 @@ namespace ngon {
 		}
 		const double radius = 1.0;
 	};
+	class Goal {
+	public:
+		Goal() = default;
+		Goal(olc::vd2d pos) : position(pos) { }
 		// If the Ball overlaps the Goal then play a simple animation:
 		// scale the ball down overtime, and sinusoidal motion rotate it around the goal
 		// slowly lerp ball position to goal middle
