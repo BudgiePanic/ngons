@@ -2,6 +2,8 @@
 #include "olcPixelGameEngine.h"
 #include <vector>
 #include <string>
+#define OLC_PGEX_TRANSFORMEDVIEW
+#include "olcPGEX_TransformedView.h"
 
 /**
 * Application controls:
@@ -86,6 +88,7 @@ public:
 	ngon::GameState state;
 	ngon::Editing* editing;
 	ngon::ApplicationState* applicationState;
+	olc::TransformedView view;
 
 
 public:
@@ -185,6 +188,8 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 		}
 		applicationState->OnStateStart();
 	}
+	// handle panning
+	view.HandlePanAndZoom(); // not sure how to update to mouse 2 instead of middle mouse button
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
 	PixelGameEngine::DrawString({ 0,0 }, applicationState->GetStateString());
@@ -194,6 +199,7 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 
 bool NgonPuzzle::OnUserCreate() {
 	// Called once at the start, so create things here
+	view.Initialise(GetScreenSize());
 	editing = new ngon::Editing(this);
 	applicationState = editing;
 	applicationState->OnStateStart();
