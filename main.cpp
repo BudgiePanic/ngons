@@ -94,7 +94,6 @@ namespace ngon {
 		}
 		static constexpr double radius = 0.5;
 	};
-	class Goal;
 	struct GameState {
 		// Ngon is built from points. These points are connected to form a line segment
 		// The line segments all connect to form the polygon
@@ -124,15 +123,6 @@ public:
 };
 
 namespace ngon {
-	class Goal {
-		// If the Ball overlaps the Goal then play a simple animation:
-		// scale the ball down overtime, and sinusoidal motion rotate it around the goal
-		// slowly lerp ball position to goal middle
-		olc::vd2d position;
-		void tick(float fElapsedTime) {
-
-		}
-	};
 
 	static std::string StringFromGameState(GameState* state) {
 		if (state == nullptr) {
