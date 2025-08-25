@@ -192,7 +192,10 @@ namespace ngon {
 			// Set the view to center on the ball position
 			ngon::Ball& ball = this->app->state.ball;
 			olc::vd2d ballWorldPos = ball.position;
-			// how to center the view on the ball position? TODO
+			app->view.SetWorldOffset(
+				ballWorldPos - olc::vd2d{ app->ScreenWidth() * 0.5, app->ScreenHeight() * 0.5} / 
+				app->view.GetWorldScale()
+			);
 			return true;
 		}
 		std::string GetStateString() override {
