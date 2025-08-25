@@ -294,7 +294,7 @@ namespace ngon {
 				app->view.GetWorldScale()
 			);
 			// handle user input
-			auto angularAcceleration = 2.0;
+			auto angularAcceleration = 2.0 * std::numbers::pi;
 			if (app->GetKey(olc::Key::A).bHeld) {
 				app->state.ball.angularVelocity += angularAcceleration * fElapsedTime;
 			}
