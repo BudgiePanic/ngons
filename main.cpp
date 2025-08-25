@@ -327,52 +327,32 @@ namespace ngon {
 			quad tree or K-d tree to discard far away polygons early.
 			*/
 			for (const Polygon& poly : app->state.shapes) {
-				double ballFric = ball.frictionCoefficient;
-				double polyFric = poly.frictionCoefficient;
 				for (int idx = 0; idx < poly.numbSegments(); idx++) {
 					olc::vd2d collisionNormal = {};
 					olc::vd2d start, end;
 					poly.getSegmentPoints(idx, start, end);
-					if (ball.BallLineIntersect(start, end, collisionNormal)) {
-						olc::vd2d normilizedCollisionNormal = collisionNormal.norm();
-						// move the ball to resolve the collision
-						ball.position += (ball.radius - collisionNormal.mag()) * normilizedCollisionNormal;
-						if (ball.wantsToImpulse) {
-							// user pressed space bar to jump
-							// later, update this to be along the collision normal?
-							// later, jump cool down timer?
-							ball.netForce = olc::vd2d{0, 10};
-							ball.wantsToImpulse = false;
-						}
-						// apply force from ball bouncing off surface
-						// collision force - applied directly to the velocity as an impulse
-						double velRelToNormal = ball.velocity.dot(normilizedCollisionNormal);
-						if (velRelToNormal < 0.0) {
-							double energy = -(1 + ball.elasticity) * velRelToNormal * ball.mass;
-							olc::vd2d impulse = energy * normilizedCollisionNormal;
-							ball.velocity += impulse / ball.mass;
-							// Use friction to convert ball angular velocity into tangiental velocity (or make a force?)
-							// or could we gain some angular velocity if we bounced off a sloped surface?
-							olc::vd2d segment = end - start; // TODO should this be normalized?
-							double velRelToTangent = ball.velocity.dot(segment);
-							double friction = -std::min(
-								ball.frictionCoefficient * std::abs(energy),
-								std::abs(velRelToTangent) * ball.mass
-							);
-							auto frictionImpulse = friction * segment * ((velRelToTangent > 0.0) ? 1.0 : -1.0);
-							ball.velocity += frictionImpulse / ball.mass;
-						}
-						// friction saps energy from ball
-
-					} else {
-						// do nothing I guess
+					if (!ball.BallLineIntersect(start, end, collisionNormal)) { 
+						continue;
 					}
+					if (ball.wantsToImpulse) {
+						// user pressed space bar to jump
+						// later, update this to be along the collision normal?
+						// later, jump cool down timer?
+						ball.velocity += olc::vd2d{0,5};
+						ball.wantsToImpulse = false;
+					}
+					olc::vd2d normilizedCollisionNormal = collisionNormal.norm();
+					olc::vd2d segment = end - start;
+					// Finally, move the ball to resolve the collision
+					ball.position += (ball.radius - collisionNormal.mag()) * normilizedCollisionNormal;
 				}
 			}
 			// update angular displacement, velocity
 			ball.angularDisplacement += ball.angularVelocity * fElapsedTime;
 			// force due to gravity
 			ball.netForce += olc::vd2d{ 0, ball.mass * -3};
+			// force from drag
+			ball.netForce += ball.dragCoefficient * (ball.velocity * ball.velocity) * (0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius);
 			// update velocity
 			olc::vd2d netAcceleration = ball.netForce / ball.mass;
 			ball.velocity += netAcceleration * fElapsedTime;
