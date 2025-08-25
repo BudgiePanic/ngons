@@ -219,7 +219,7 @@ namespace ngon {
 			return "";
 		}
 		auto& b = state->ball;
-		return std::format("Ball properties [pos {},\n\tvel {},\n\tangVel {}, wantToJump {},\n\tnetForce {}]",
+		return std::format("Ball properties [\n\tpos {},\n\tvel {},\n\tangVel {},\n\twantToJump {},\n\tnetForce {}]",
 			b.position.str(),
 			b.velocity.str(),
 			b.angularVelocity,
