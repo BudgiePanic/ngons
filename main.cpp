@@ -400,6 +400,8 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// handle panning
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
+	// stars background TODO stretch goal
+	
 	// Status info
 	PixelGameEngine::DrawString({ 0,0 }, applicationState->GetStateString());
 	PixelGameEngine::DrawString({ 0,10 }, ngon::StringFromGameState(&this->state));
