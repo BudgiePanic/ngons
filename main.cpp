@@ -76,9 +76,6 @@ namespace ngon {
 		void applyForce(olc::vd2d) {
 		
 		}
-		void tick(float fElapsedTime) {
-
-		}
 		static constexpr double radius = 0.5;
 	};
 	class Goal {
@@ -89,9 +86,6 @@ namespace ngon {
 		// scale the ball down overtime, and sinusoidal motion rotate it around the goal
 		// slowly lerp ball position to goal middle
 		olc::vd2d position;
-		void tick(float fElapsedTime) {
-
-		}
 		static constexpr double radius = 0.5;
 	};
 	struct GameState {
@@ -200,6 +194,14 @@ namespace ngon {
 		}
 		std::string GetStateString() override {
 			return "playing: under construction";
+		}
+		// putting the tick here so the ball and goal don't need a reference back to the state
+		void tickBall(const Ball& ball, float fElapsedTime) {
+		
+		}
+
+		void tickGoal(const Goal& goal, float fElapsedTime) {
+		
 		}
 	};
 }
