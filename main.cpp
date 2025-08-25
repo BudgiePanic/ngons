@@ -215,7 +215,14 @@ namespace ngon {
 		if (state == nullptr) {
 			return "";
 		}
-		return "under construction";
+		auto& b = state->ball;
+		return std::format("Ball properties [pos {},\n\tvel {},\n\tangVel {}, wantToJump {},\n\tnetForce {}]",
+			b.position.str(),
+			b.velocity.str(),
+			b.angularVelocity,
+			b.wantsToImpulse,
+			b.netForce.str()
+		);
 	}
 
 	class ApplicationState {
