@@ -124,10 +124,16 @@ namespace ngon {
 		Ball() = default;
 		Ball(olc::vd2d pos) : position(pos) { }
 		olc::vd2d position;
+		olc::vd2d velocity;
+		// rotation axis will be +ve Z using a right hand coordinate system, so a +ve ang vel results in clockwise rotation
+		// radians per second
+		double angularVelocity;
+		double angularDisplacement;
 		void applyForce(olc::vd2d) {
 		
 		}
 		static constexpr double radius = 0.5;
+		static constexpr double mass = 5.0;
 		bool pointInBall(const olc::vd2d& point) const {
 			// make a line from ball origin to the point
 			// point is in the ball if the length of the line is less than the radius
