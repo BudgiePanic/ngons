@@ -271,6 +271,27 @@ namespace ngon {
 	public:
 		Playing(NgonPuzzle* app) : ApplicationState(app) {
 		}
+		enum PlayState {
+			paused,
+			live,
+			victory_anim_seq,
+			victory_end,
+		};
+		std::string PlayStateToString(PlayState state) {
+			switch (state) {
+			case live:
+				return "Live";
+			case paused: 
+				return "Paused";
+			case victory_anim_seq:
+				return "Victory";
+			case victory_end:
+				return "You won";
+			default:
+				return "Unknown";
+			}
+		}
+		PlayState playState = live;
 		void OnStateStart() override {
 			// TEMP
 			// Write test level data to the application
@@ -284,6 +305,7 @@ namespace ngon {
 				},
 				ngon::Ball({0, 1.7})
 			};
+			playState = live;
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
 			// Set the view to center on the ball position
@@ -305,6 +327,7 @@ namespace ngon {
 				ball.wantsToImpulse = true;
 			}
 			// run simulation
+			// TODO switch based on play state
 			tickBall(app->state.ball, fElapsedTime);
 			for (const Goal& goal : app->state.goals) {
 				tickGoal(goal, fElapsedTime);
@@ -313,7 +336,7 @@ namespace ngon {
 			return true;
 		}
 		std::string GetStateString() override {
-			return "playing: under construction";
+			return std::format("Playing: {}", PlayStateToString(this->playState));
 		}
 		// putting the tick here so the ball and goal don't need a reference back to the state
 		void tickBall(Ball& ball, float fElapsedTime) {
@@ -396,9 +419,10 @@ namespace ngon {
 			ball.wantsToImpulse = false;
 		}
 
-		void tickGoal(const Goal& goal, float fElapsedTime) const {
+		void tickGoal(const Goal& goal, float fElapsedTime) {
 			if (goal.GoalBallOverlap(app->state.ball)) {
 				// TODO you win!
+				this->playState = victory_anim_seq;
 			}
 			// TODO animated over time properties can be updated here
 		}
