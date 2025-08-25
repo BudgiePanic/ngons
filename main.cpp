@@ -327,7 +327,12 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	}
 	// Ball
 	view.DrawCircle(state.ball.position, state.ball.radius, olc::WHITE);
-	// TODO rotate mini circle by rotation radians then translate to ball location and draw that too
+	const auto m = state.ball.radius * 0.6;
+	olc::vd2d miniPos = {
+		m * cos(state.ball.angularDisplacement),
+		m * sin(state.ball.angularDisplacement)
+	};
+	view.DrawCircle(miniPos + state.ball.position, state.ball.radius * 0.20, olc::WHITE);
 	// Goals
 	// TODO make the goals look cooler with some animated property that changes over time
 	for (const ngon::Goal& goal : state.goals) {
