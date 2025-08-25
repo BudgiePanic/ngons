@@ -283,6 +283,23 @@ namespace ngon {
 				ballWorldPos - olc::vd2d{ app->ScreenWidth() * 0.5, app->ScreenHeight() * 0.5} / 
 				app->view.GetWorldScale()
 			);
+			// handle user input
+			auto angularAcceleration = 2.0;
+			if (app->GetKey(olc::Key::A).bHeld) {
+				app->state.ball.angularVelocity += angularAcceleration * fElapsedTime;
+			}
+			if (app->GetKey(olc::Key::D).bHeld) {
+				app->state.ball.angularVelocity -= angularAcceleration * fElapsedTime;
+			}
+			if (app->GetKey(olc::Key::SPACE).bPressed) {
+				ball.wantsToImpulse = true;
+			}
+			// run simulation
+			tickBall(app->state.ball, fElapsedTime);
+			for (const Goal& goal : app->state.goals) {
+				tickGoal(goal, fElapsedTime);
+			}
+
 			return true;
 		}
 		std::string GetStateString() override {
