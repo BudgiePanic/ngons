@@ -5,6 +5,7 @@
 #define OLC_PGEX_TRANSFORMEDVIEW
 #include "olcPGEX_TransformedView.h"
 #include <Math.h>
+#include <numbers>
 
 /**
 * Application controls:
@@ -144,6 +145,8 @@ namespace ngon {
 		static constexpr double radius = 0.5;
 		static constexpr double mass = 5.0;
 		static constexpr double frictionCoefficient = 1.0;
+		static constexpr double dragCoefficient = 0.47;
+		static constexpr double inertiaMoment = (2.0 / 5.0) * mass * radius * radius;
 		bool pointInBall(const olc::vd2d& point) const {
 			// make a line from ball origin to the point
 			// point is in the ball if the length of the line is less than the radius
