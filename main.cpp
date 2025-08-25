@@ -318,7 +318,6 @@ namespace ngon {
 		// putting the tick here so the ball and goal don't need a reference back to the state
 		void tickBall(Ball& ball, float fElapsedTime) {
 			ball.netForce = {0,0};
-			// TODO resolve static collision with polygons
 			/* 
 			TODO in the future this could be sped up in various ways
 			Each polygon can be enveloped in a bounding sphere, check for sphere overlap 
@@ -334,6 +333,43 @@ namespace ngon {
 					if (!ball.BallLineIntersect(start, end, collisionNormal)) { 
 						continue;
 					}
+					olc::vd2d normalizedCollisionNormal = collisionNormal.norm();
+					/* LLM GENERATED CODE */ // Something to get started, still not working correctly - will need re-write
+					auto relativeVelocity = ball.velocity.dot(normalizedCollisionNormal);
+					if (relativeVelocity > 0.0) {
+						// Ball is moving away from the line segment.
+						continue;
+					}
+					// apply force from collision
+					auto tangent = olc::vd2d{-normalizedCollisionNormal.y, normalizedCollisionNormal.x};
+					auto normalVelocity = relativeVelocity * normalizedCollisionNormal;
+					auto tangentVelocity = ball.velocity.dot(tangent) * tangent;
+					auto contactPoint = ball.position + normalizedCollisionNormal * ball.radius;
+					auto r = ball.radius * normalizedCollisionNormal;
+					auto rotationalVelocity = olc::vd2d{
+						-ball.angularVelocity * r.y,
+						ball.angularVelocity * r.x
+					};
+					auto contactVelocity = ball.velocity + rotationalVelocity;
+					auto contactVelocityNormal = contactVelocity.dot(normalizedCollisionNormal) * normalizedCollisionNormal;
+					auto contactVelocityTangent = contactVelocity.dot(tangent) * tangent;
+					auto normalImpulse = 
+						-(1.0 + ball.elasticity) * contactVelocity.dot(normalizedCollisionNormal) * ball.mass;
+					normalImpulse = normalImpulse / (1.0 / ball.mass + ((ball.radius * ball.radius) / ball.inertiaMoment));
+
+					auto tangentImpulseMax = ball.frictionCoefficient * std::abs(normalImpulse);
+					auto tangentImpulse = -contactVelocity.dot(tangent) * ball.mass;
+					tangentImpulse = tangentImpulse / (1.0 / ball.mass + ((ball.radius * ball.radius) / ball.inertiaMoment));
+					tangentImpulse = std::clamp(tangentImpulse, -tangentImpulseMax, tangentImpulseMax);
+
+					auto impulse = normalImpulse * normalizedCollisionNormal + tangentImpulse * tangent;
+
+					ball.velocity += fElapsedTime * (impulse / ball.mass);
+
+					auto torque = r.x * impulse.y - r.y * impulse.x;
+					ball.angularVelocity += fElapsedTime * (torque / ball.inertiaMoment);
+					/* END OF LLM CODE */
+
 					if (ball.wantsToImpulse) {
 						// user pressed space bar to jump
 						// later, update this to be along the collision normal?
@@ -341,10 +377,8 @@ namespace ngon {
 						ball.velocity += olc::vd2d{0,5};
 						ball.wantsToImpulse = false;
 					}
-					olc::vd2d normilizedCollisionNormal = collisionNormal.norm();
-					olc::vd2d segment = end - start;
 					// Finally, move the ball to resolve the collision
-					ball.position += (ball.radius - collisionNormal.mag()) * normilizedCollisionNormal;
+					ball.position += (ball.radius - collisionNormal.mag()) * normalizedCollisionNormal;
 				}
 			}
 			// update angular displacement, velocity
