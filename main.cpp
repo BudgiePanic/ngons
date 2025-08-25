@@ -124,16 +124,26 @@ namespace ngon {
 		Ball() = default;
 		Ball(olc::vd2d pos) : position(pos) { }
 		olc::vd2d position;
-		olc::vd2d velocity;
-		// rotation axis will be +ve Z using a right hand coordinate system, so a +ve ang vel results in clockwise rotation
-		// radians per second
-		double angularVelocity;
-		double angularDisplacement;
-		void applyForce(olc::vd2d) {
-		
-		}
+		olc::vd2d velocity = {};
+		olc::vd2d netForce = {};
+		/**
+		* rotational velocity in radians per second
+		* +ve ang vel results in CCW rotation
+		*/
+		double angularVelocity = 0.0;
+		/**
+		* Total amount of rotation this ball has undergone.
+		*/
+		double angularDisplacement = 0.0;
+		bool wantsToImpulse = false;
+		/**
+		* How 'bouncy' the ball is. Magic number for ball encountering elastic collisions.
+		* Tells us what % of ball kinetic energy is maintained in a collision.
+		*/
+		static constexpr double elasticity = 0.4;
 		static constexpr double radius = 0.5;
 		static constexpr double mass = 5.0;
+		static constexpr double frictionCoefficient = 1.0;
 		bool pointInBall(const olc::vd2d& point) const {
 			// make a line from ball origin to the point
 			// point is in the ball if the length of the line is less than the radius
