@@ -152,17 +152,18 @@ namespace ngon {
 		}
 		/**
 		* Test if this ball intersects with a line segment.
-		* Writes the squared distance from the [closest point on the line] to the ball origin to distanceSquared
+		* Writes the vector from the [closest point on the line] to the ball origin to v.
 		*/
-		bool BallLineIntersect(const olc::vd2d& start, const olc::vd2d& end, double& distSq) const {
+		bool BallLineIntersect(const olc::vd2d& start, const olc::vd2d& end, olc::vd2d& v) const {
 			olc::vd2d endStart = end - start;
 			double t = (position - start).dot(endStart) / endStart.dot(endStart);
 			if (t < 0.0 || t > 1.0) {
 				return false;
 			}
 			olc::vd2d closest = start + endStart * t;
-			double distanceSquared = (position - closest).mag2();
-			distSq = distanceSquared;
+			olc::vd2d lineToBall = position - closest; // TODO are these the right way around?
+			v = lineToBall;
+			double distanceSquared = lineToBall.mag2();
 			return distanceSquared < (radius * radius);
 		}
 	};
