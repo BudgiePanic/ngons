@@ -219,7 +219,7 @@ namespace ngon {
 			return "";
 		}
 		auto& b = state->ball;
-		return std::format("Ball properties [\n\tpos {},\n\tvel {},\n\tangVel {},\n\twantToJump {},\n\tnetForce {}]",
+		return std::format("Ball properties [\n\tpos {},\n\tvel {},\n\tangVel {},\n\twantToJump {},\n\tnetForce {}\n]",
 			b.position.str(),
 			b.velocity.str(),
 			b.angularVelocity,
@@ -248,6 +248,14 @@ namespace ngon {
 		Editing(NgonPuzzle* app) : ApplicationState(app) {
 
 		}
+		enum EditState {
+			placingPoints,
+			movePoints,
+			placeBall,
+			placeExit,
+			polygonSelect,
+		};
+		EditState editState = placingPoints;
 		/**
 		* OnStartEditing => make a new ball at this position
 		*/
@@ -259,10 +267,52 @@ namespace ngon {
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
 			app->view.HandlePanAndZoom(); // not sure how to update to mouse 2 instead of middle mouse button
+			if (app->GetKey(olc::Key::K1).bPressed) {
+				this->editState = placingPoints;
+			}
+			if (app->GetKey(olc::Key::K2).bPressed) {
+				this->editState = movePoints;
+			}
+			if (app->GetKey(olc::Key::K3).bPressed) {
+				this->editState = placeBall;
+			}
+			if (app->GetKey(olc::Key::K4).bPressed) {
+				this->editState = placeExit;
+			}
+			if (app->GetKey(olc::Key::K5).bPressed) {
+				this->editState = polygonSelect;
+			}
+			if (app->GetKey(olc::Key::ENTER).bPressed) {
+				
+			}
+			if (app->GetKey(olc::Key::BACK).bPressed) {
+
+			}
 			return true;
 		}
 		std::string GetStateString() override {
-			return "editing: under construction";
+			// TODO based on the selected item, update contextual help string.
+			std::string one = editState == placingPoints ? "[[1]]" : " [1] "; // DRY believers in disbelief right now
+			std::string two = editState == movePoints ? "[[2]]" : " [2] ";
+			std::string three = editState == placeBall ? "[[3]]" : " [3] ";
+			std::string four = editState == placeExit ? "[[4]]" : " [4] ";
+			std::string five = editState == polygonSelect ? "[[5]]" : " [5] ";
+			std::string enter = editState == placingPoints ? "confirm polygon" : "";
+			std::string backspace = "delete";
+			std::string lmb = 
+				editState == placingPoints ? "add vert to poly" :
+				editState == movePoints ? "select/move vert" :
+				editState == placeBall ? "drab ball" :
+				editState == placeExit ? "place exit" :
+				editState == polygonSelect ? "select vert group" :
+				"unknown"
+			;
+
+			return std::format(
+				"Controls:\n{} place points {} move points {} place ball\n{} place exit {} select polygon\n[enter] {} [backspace] {}\n" \
+				"[MMB] pan [ScrWhl] zoom [LMB] {}",
+				one, two, three, four, five, enter, backspace, lmb
+			);
 		}
 
 	};
@@ -451,8 +501,10 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// stars background TODO stretch goal
 	
 	// Status info
-	PixelGameEngine::DrawString({ 0,0 }, applicationState->GetStateString());
-	PixelGameEngine::DrawString({ 0,10 }, ngon::StringFromGameState(&this->state));
+	std::string stStr = applicationState->GetStateString();
+	int vertOffset = (int) std::count(stStr.begin(), stStr.end(), '\n');
+	PixelGameEngine::DrawString({ 0,0 }, stStr);
+	PixelGameEngine::DrawString({ 0, 10 + (vertOffset * 10) }, ngon::StringFromGameState(&this->state));
 	// Polygons
 	for (const auto &poly : this->state.shapes) {
 		const size_t numbPoints = poly.points.size();
