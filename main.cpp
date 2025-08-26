@@ -508,6 +508,10 @@ namespace ngon {
 			playState = live;
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
+			if (app->GetKey(olc::Key::BACK).bPressed) {
+				app->state = app->editing->memento;
+				this->playState = PlayState::live;
+			}
 			// Set the view to center on the ball position
 			ngon::Ball& ball = this->app->state.ball;
 			olc::vd2d ballWorldPos = ball.position;
