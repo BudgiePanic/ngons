@@ -536,7 +536,9 @@ namespace ngon {
 			for (Goal& goal : app->state.goals) {
 				tickGoal(goal, fElapsedTime);
 			}
-
+			if (playState == PlayState::victory_end) {
+				app->DrawString(app->GetScreenSize() / 2, "You won!\nPress backspace to restart\nPress Esc to return to editor.");
+			}
 			return true;
 		}
 		std::string GetStateString() override {
