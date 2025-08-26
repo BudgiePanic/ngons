@@ -513,8 +513,7 @@ namespace ngon {
 			ngon::Ball& ball = this->app->state.ball;
 			olc::vd2d ballWorldPos = ball.position;
 			app->view.SetWorldOffset(
-				ballWorldPos - olc::vd2d{ app->ScreenWidth() * 0.5, app->ScreenHeight() * 0.5} / 
-				app->view.GetWorldScale()
+				ballWorldPos - app->GetScreenSize() / 2 / app->view.GetWorldScale()
 			);
 			// handle user input
 			if (this->playState == live) {
