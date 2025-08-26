@@ -64,6 +64,7 @@ inline static int CompareFloat(const double a, const double b) {
 	if (a < b) return BisBigger;
 	return AisBigger;
 }
+constexpr auto m1 = 0;
 
 namespace ngon {
 	class Selectable {
@@ -388,15 +389,17 @@ namespace ngon {
 				app->view.GetWorldScale()
 			);
 			// handle user input
-			auto angularAcceleration = 2.0 * std::numbers::pi;
-			if (app->GetKey(olc::Key::A).bHeld) {
-				app->state.ball.angularVelocity += angularAcceleration * fElapsedTime;
-			}
-			if (app->GetKey(olc::Key::D).bHeld) {
-				app->state.ball.angularVelocity -= angularAcceleration * fElapsedTime;
-			}
-			if (app->GetKey(olc::Key::SPACE).bPressed) {
-				ball.wantsToImpulse = true;
+			if (this->playState == live) {
+				auto angularAcceleration = 2.0 * std::numbers::pi;
+				if (app->GetKey(olc::Key::A).bHeld) {
+					app->state.ball.angularVelocity += angularAcceleration * fElapsedTime;
+				}
+				if (app->GetKey(olc::Key::D).bHeld) {
+					app->state.ball.angularVelocity -= angularAcceleration * fElapsedTime;
+				}
+				if (app->GetKey(olc::Key::SPACE).bPressed) {
+					ball.wantsToImpulse = true;
+				}
 			}
 			// run simulation
 			// TODO switch based on play state
