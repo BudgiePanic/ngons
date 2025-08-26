@@ -71,9 +71,6 @@ inline static int CompareFloat(const double a, const double b) {
 constexpr auto m1 = 0;
 
 namespace ngon {
-	class Selectable {
-
-	};
 	class Polygon {
 	public:
 		std::vector<olc::vd2d> points;
