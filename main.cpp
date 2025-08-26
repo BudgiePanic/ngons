@@ -251,6 +251,15 @@ namespace ngon {
 	};
 
 	class Editing : public ApplicationState {
+	protected:
+		struct Selected {
+			olc::vd2d* vertex;
+			Goal* goal;
+			const Polygon* polygon;
+		};
+		Selected selected = {
+			nullptr, nullptr, nullptr
+		};
 	public:
 		Editing(NgonPuzzle* app) : ApplicationState(app) {
 			// initial level
@@ -284,45 +293,149 @@ namespace ngon {
 		void OnStateStart() override {
 			// restore state to how it was before gameplay started
 			app->state = memento;
+			selected = {nullptr, nullptr, nullptr}; // reset selected items
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
 			bool editMade = false;
 			app->view.HandlePanAndZoom(); // not sure how to update to mouse 2 instead of middle mouse button
+			const auto mousePosInWorld = app->view.ScreenToWorld(app->GetMousePos());
 			if (app->GetKey(olc::Key::K1).bPressed) {
 				this->editState = placingPoints;
+				this->selected.vertex = nullptr;
 			}
 			if (app->GetKey(olc::Key::K2).bPressed) {
 				this->editState = movePoints;
+				this->selected.vertex = nullptr;
 			}
 			if (app->GetKey(olc::Key::K3).bPressed) {
 				this->editState = placeBall;
 			}
 			if (app->GetKey(olc::Key::K4).bPressed) {
 				this->editState = placeExit;
+				this->selected.goal = nullptr;
 			}
 			if (app->GetKey(olc::Key::K5).bPressed) {
 				this->editState = polygonSelect;
+				this->selected.polygon = nullptr;
 			}
 			if (app->GetKey(olc::Key::ENTER).bPressed) {
-				
+				this->selected.polygon = nullptr;
+				this->selected.vertex = nullptr;
+				this->selected.goal = nullptr;
+				if (editState == EditState::placingPoints &&
+					!this->app->state.shapes.back().points.empty()) {
+					editMade = true;
+					this->app->state.shapes.push_back(Polygon());
+				}
+				if (editState == EditState::placeExit) {
+					editMade = true;
+					this->app->state.goals.push_back(Goal(mousePosInWorld));
+				}
 			}
 			if (app->GetKey(olc::Key::BACK).bPressed) {
-
+				if (editState == EditState::polygonSelect && this->selected.polygon != nullptr) {
+					for (auto iterator = app->state.shapes.begin(); 
+						  iterator != app->state.shapes.end(); iterator++) {
+						if (&(*iterator) == selected.polygon) {
+							app->state.shapes.erase(iterator);
+							this->selected.polygon = nullptr;
+							this->selected.vertex = nullptr;
+							editMade = true;
+							break;
+						}
+					}
+					if (app->state.shapes.empty()) {
+						app->state.shapes.push_back(Polygon());
+					}
+				}
+				if (editState == EditState::movePoints && this->selected.vertex != nullptr) {
+					for (auto iterator = app->state.shapes.back().points.begin();
+							iterator != app->state.shapes.back().points.end(); iterator++) {
+						if (&(*iterator) == selected.vertex) {
+							app->state.shapes.back().points.erase(iterator);
+							this->selected.vertex = nullptr;
+							editMade = true;
+							break;
+						}
+					}
+				}
+				if (editState == EditState::placeExit && selected.goal != nullptr) {
+					for (auto iterator = app->state.goals.begin();
+						iterator != app->state.goals.end(); iterator++) {
+						if (&(*iterator) == selected.goal) {
+							app->state.goals.erase(iterator);
+							this->selected.goal = nullptr;
+							editMade = true;
+							break;
+						}
+					}
+				}
+				if (editState == EditState::placingPoints) {
+					// delete the last vert in the currently edited shape
+					this->selected.polygon = nullptr;
+					this->selected.vertex = nullptr;
+					this->app->state.shapes.back().points.pop_back();
+					editMade = true;
+				}
+				
 			}
 			// yeah yeah, I know, we should use the State design pattern here.
 			// maybe later
 			// TODO refactor out these for loops, we're copy pasting the same for loop multiple times
 			if (app->GetMouse(m1).bPressed) {
+				double closestSq = std::numeric_limits<double>::infinity();
 				if (this->editState == placingPoints) {
 					editMade = true;
-					app->state.shapes.back().points.push_back({
-						app->view.ScreenToWorld(app->GetMousePos()),
-					});
+					app->state.shapes.back().points.push_back(mousePosInWorld);
 				}
-			}
-			if (app->GetMouse(m1).bHeld) {
-
-			}if (app->GetMouse(m1).bReleased) {
+				if (this->editState == EditState::movePoints) {
+					for (olc::vd2d& p : app->state.shapes.back().points) {
+						double dist = (p - mousePosInWorld).mag2();
+						if (dist < closestSq) {
+							closestSq = dist;
+							selected.vertex = &p;
+						}
+					}
+				}
+				if (this->editState == EditState::placeExit) {
+					for (Goal& goal : app->state.goals) {
+						double dist = (goal.position - mousePosInWorld).mag2();
+						if (dist < closestSq) {
+							closestSq = dist;
+							selected.goal = &goal;
+						}
+					}
+				}
+				if (this->editState == EditState::polygonSelect) {
+					// There are two ways we could do this
+					// 1: select poly whose 'center of mass' is closest to the mouse pos
+					// 2: select poly that has the vertex which is closest to the mouse pos
+					for (const Polygon& poly : app->state.shapes) {
+						for (const olc::vd2d& p : poly.points) {
+							double dist = (p - mousePosInWorld).mag2();
+							if (dist < closestSq) {
+								closestSq = dist;
+								selected.polygon = &poly;
+							}
+						}
+					}
+				}
+			} else if (app->GetMouse(m1).bHeld) {
+				if (editState == EditState::placeBall) {
+					editMade = true;
+					app->state.ball.position = mousePosInWorld;
+				}
+				if (editState == EditState::movePoints && selected.vertex != nullptr) {
+					editMade = true;
+					selected.vertex->x = mousePosInWorld.x;
+					selected.vertex->y = mousePosInWorld.y;
+				}
+				if (editState == EditState::placeExit && selected.goal != nullptr) {
+					editMade = true;
+					selected.goal->position.x = mousePosInWorld.x;
+					selected.goal->position.y = mousePosInWorld.y;
+				}
+			}else if (app->GetMouse(m1).bReleased) {
 
 			}
 			// Update the memento
@@ -337,20 +450,29 @@ namespace ngon {
 			std::string three = editState == placeBall ? "[[3]]" : " [3] ";
 			std::string four = editState == placeExit ? "[[4]]" : " [4] ";
 			std::string five = editState == polygonSelect ? "[[5]]" : " [5] ";
-			std::string enter = editState == placingPoints ? "confirm polygon" : "";
-			std::string backspace = "delete";
+			std::string enter = 
+				editState == placingPoints ? "make new polygon" : 
+				editState == placeExit ? "make new portal" : 
+				"_";
+			std::string backspace = 
+				editState == placingPoints ? "delete last vertex" :
+				editState == movePoints ? "_" :
+				editState == placeBall ? "_" :
+				editState == placeExit ? "delete selected portal" :
+				editState == polygonSelect ? "delete selected polygon" :
+				"";
 			std::string lmb = 
 				editState == placingPoints ? "add vert to poly" :
 				editState == movePoints ? "select/move vert" :
-				editState == placeBall ? "drab ball" :
+				editState == placeBall ? "move ball" :
 				editState == placeExit ? "place exit" :
 				editState == polygonSelect ? "select vert group" :
-				"unknown"
+				"_"
 			;
 
 			return std::format(
 				"Controls:\n{} place points {} move points {} place ball\n{} place exit {} select polygon\n[enter] {} [backspace] {}\n" \
-				"[MMB] pan [ScrWhl] zoom [LMB] {}",
+				"[MMB] pan [ScrWhl] zoom [LMB] {}\n[esc] play level",
 				one, two, three, four, five, enter, backspace, lmb
 			);
 		}
