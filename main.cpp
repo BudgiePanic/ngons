@@ -531,10 +531,8 @@ namespace ngon {
 				if (app->GetKey(olc::Key::SPACE).bPressed) {
 					ball.wantsToImpulse = true;
 				}
+				tickBall(app->state.ball, fElapsedTime);
 			}
-			// run simulation
-			// TODO switch based on play state
-			tickBall(app->state.ball, fElapsedTime);
 			for (Goal& goal : app->state.goals) {
 				tickGoal(goal, fElapsedTime);
 			}
