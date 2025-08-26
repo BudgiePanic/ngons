@@ -364,10 +364,12 @@ namespace ngon {
 				}
 				if (editState == EditState::placingPoints) {
 					// delete the last vert in the currently edited shape
-					this->selected.polygon = nullptr;
-					this->selected.vertex = nullptr;
-					this->app->state.shapes.back().points.pop_back();
-					editMade = true;
+					if (!this->app->state.shapes.back().points.empty()) {
+						this->selected.polygon = nullptr;
+						this->selected.vertex = nullptr;
+						this->app->state.shapes.back().points.pop_back();
+						editMade = true;
+					}
 				}
 				
 			}
