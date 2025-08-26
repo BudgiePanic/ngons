@@ -16,16 +16,20 @@
 *
 * Edit mode:
 *
-* @1: place points with left click, pan with right click, auto create line segments, contribute to current polygon
+* @1: place points with left click, pan with right click, auto create line segments, contribute to current polygon (DONE)
 * @2: select nearest point to point with left click, drag originating within select point = move the point
-*     (with affordance margin), pan with right click
+*     (with affordance margin), pan with right click (DONE - reduced, always drag nearest poly - good enough)
 * @3:
-*  left click place the BALL at current mouse position, check if spawn is good, if no, move it to valid position, pan on right click
-* @back_space: delete the currently selected item
+*  left click place the BALL at current mouse position, check if spawn is good, if no, move it to valid position, pan on right click 
+*    (DONE - no spawn check - kinda funny to watch collision resolve on start if bad spawn)
+* @back_space: delete the currently selected item (DONE)
 * @4: left click place an EXIT at current mouse position, clicking on an EXIT makes it the selected item, pan on right click
+*     (DONE - left click, move nearest portal to mouse pos, ENTER to create new portal at mouse pos - good enough)
 * @enter:
 *   enter while a point is selected 'confirms' the current polygon, subsequent points will belong to a new polygon
+*     (DONE - also, pressing enter in portal mode creates a new exit portal)
 * @5: Polygon select mode: If clicking within polygon, that polygon becomes the selected item
+*       (NOT DONE - selects polygon with closest vertex to mouse pos. Not implemented: selecting vert in the selected poly for movement or deletion)
 *     Allows delection of polygon.
 *     Clicking outside of polygon clears current selected item
 *       If a polygon is selected, pressing enter cycles the selected item to through the points in the polygon
@@ -34,17 +38,17 @@
 * deleted and then recreated.
 *
 * Play mode:
-* @a: add left spin to the ball
-* @d: add right spin to the ball
-* @space: vertical jump impulse on the ball
-* @back_space: restart level
+* @a: add left spin to the ball (DONE)
+* @d: add right spin to the ball (DONE)
+* @space: vertical jump impulse on the ball (DONE)
+* @back_space: restart level (DONE)
 */
 
 /*
 	Progress goals:
 	- (DONE) Add the PGE extension for panning and zooming, integrate it into the application
           - https://www.youtube.com/watch?v=OqfHIujOvnE
-	- (TODO) Draw state string to screen for visibility and explainability
+	- (DONE) Draw state string to screen for visibility and explainability
           - editor: [[1]] place points [2] select and move points [3] place ball [4] place exits [5] select polygons [enter] confirm polygon [backspace] delete | selected item { ... }
           - play: [a] go left [d] go right [space] jump | [esc] back to editor | [backspace] restart | ball params { ... }
 	- (DONE) Always Init with a basic test level
@@ -305,8 +309,9 @@ namespace ngon {
 			if (app->GetKey(olc::Key::BACK).bPressed) {
 
 			}
-			// yeah yeah., I know, we should use the State design pattern here.
+			// yeah yeah, I know, we should use the State design pattern here.
 			// maybe later
+			// TODO refactor out these for loops, we're copy pasting the same for loop multiple times
 			if (app->GetMouse(m1).bPressed) {
 				if (this->editState == placingPoints) {
 					editMade = true;
