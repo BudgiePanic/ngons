@@ -279,10 +279,6 @@ namespace ngon {
 			polygonSelect,
 		};
 		EditState editState = placingPoints;
-		/**
-		* OnStartEditing => make a new ball at this position
-		*/
-		olc::v_2d<double> ballPosition;
 		// currently selected item
 		// editor state: placing | selecting points | placing ball | placing exits | polygon selecting | 
 	public:
