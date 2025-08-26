@@ -137,6 +137,7 @@ namespace ngon {
 		*/
 		double angularDisplacement = 0.0;
 		bool wantsToImpulse = false;
+		double rScale = 1.0; // render scale
 		/**
 		* How 'bouncy' the ball is. Magic number for ball encountering elastic collisions.
 		* Tells us what % of ball kinetic energy is maintained in a collision.
@@ -190,6 +191,7 @@ namespace ngon {
 		std::vector<ngon::Polygon> shapes;
 		std::vector<ngon::Goal> goals;
 		ngon::Ball ball;
+		ngon::Goal* attractor;
 	};
 	class ApplicationState;
 	class Editing;
@@ -399,7 +401,7 @@ namespace ngon {
 			// run simulation
 			// TODO switch based on play state
 			tickBall(app->state.ball, fElapsedTime);
-			for (const Goal& goal : app->state.goals) {
+			for (Goal& goal : app->state.goals) {
 				tickGoal(goal, fElapsedTime);
 			}
 
@@ -489,10 +491,20 @@ namespace ngon {
 			ball.wantsToImpulse = false;
 		}
 
-		void tickGoal(const Goal& goal, float fElapsedTime) {
-			if (goal.GoalBallOverlap(app->state.ball)) {
-				// TODO you win!
+		void tickGoal(Goal& goal, const float fElapsedTime) {
+			if (this->playState == live && goal.GoalBallOverlap(app->state.ball)) {
 				this->playState = victory_anim_seq;
+				this->app->state.attractor = &goal;
+			} else if (playState == victory_anim_seq && app->state.attractor == &goal) {
+				constexpr double ballSpeed = 0.4;
+				constexpr double smallEnough = 0.01;
+				Ball& ball = app->state.ball;
+				olc::vd2d nextPos = ball.position.lerp(goal.position, 1.0 - ball.rScale);
+				ball.rScale -= ballSpeed * fElapsedTime;
+				ball.position = nextPos;
+				if (app->state.ball.rScale < smallEnough) {
+					this->playState = victory_end;
+				}
 			}
 			// TODO animated over time properties can be updated here
 		}
@@ -541,13 +553,13 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 		}
 	}
 	// Ball
-	view.DrawCircle(state.ball.position, state.ball.radius, olc::WHITE);
-	const auto m = state.ball.radius * 0.6;
+	view.DrawCircle(state.ball.position, state.ball.rScale * state.ball.radius, olc::WHITE);
+	const auto m = state.ball.rScale * state.ball.radius * 0.6;
 	olc::vd2d miniPos = {
 		m * cos(state.ball.angularDisplacement),
 		m * sin(state.ball.angularDisplacement)
 	};
-	view.DrawCircle(miniPos + state.ball.position, state.ball.radius * 0.20, olc::WHITE);
+	view.DrawCircle(miniPos + state.ball.position, state.ball.rScale * state.ball.radius * 0.20, olc::WHITE);
 	// Goals
 	// TODO make the goals look cooler with some animated property that changes over time
 	for (const ngon::Goal& goal : state.goals) {
