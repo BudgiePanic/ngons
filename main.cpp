@@ -246,8 +246,19 @@ namespace ngon {
 	class Editing : public ApplicationState {
 	public:
 		Editing(NgonPuzzle* app) : ApplicationState(app) {
-
+			// initial level
+			memento = ngon::GameState{
+				{
+					ngon::Polygon({ {0,0},{3,0},{4,1},{5,0},{7,0},{7,1},{8,1},{8,-3},{-2,-3},{-1,1} }),
+				},
+				{
+					ngon::Goal({6.2, 0.5}),
+				},
+				ngon::Ball({0, 1.7}),
+				nullptr
+			};
 		}
+		ngon::GameState memento;
 		enum EditState {
 			placingPoints,
 			movePoints,
@@ -264,8 +275,11 @@ namespace ngon {
 		// editor state: placing | selecting points | placing ball | placing exits | polygon selecting | 
 	public:
 		void OnStateStart() override {
+			// restore state to how it was before gameplay started
+			app->state = memento;
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
+			bool editMade = false;
 			app->view.HandlePanAndZoom(); // not sure how to update to mouse 2 instead of middle mouse button
 			if (app->GetKey(olc::Key::K1).bPressed) {
 				this->editState = placingPoints;
@@ -288,6 +302,24 @@ namespace ngon {
 			if (app->GetKey(olc::Key::BACK).bPressed) {
 
 			}
+			// yeah yeah., I know, we should use the State design pattern here.
+			// maybe later
+			if (app->GetMouse(m1).bPressed) {
+				if (this->editState == placingPoints) {
+					editMade = true;
+					app->state.shapes.back().points.push_back({
+						app->view.ScreenToWorld(app->GetMousePos()),
+					});
+				}
+			}
+			if (app->GetMouse(m1).bHeld) {
+
+			}if (app->GetMouse(m1).bReleased) {
+
+			}
+			// Update the memento
+			if (editMade)
+				this->memento = app->state;
 			return true;
 		}
 		std::string GetStateString() override {
@@ -343,18 +375,6 @@ namespace ngon {
 		}
 		PlayState playState = live;
 		void OnStateStart() override {
-			// TEMP
-			// Write test level data to the application
-			// Later on, all we would do is nothing. Just start ticking straight away
-			this->app->state = ngon::GameState {
-				{ 
-					ngon::Polygon({ {0,0},{3,0},{4,1},{5,0},{7,0},{7,1},{8,1},{8,-3},{-2,-3},{-1,1} }),
-				},
-				{ 
-					ngon::Goal({6.2, 0.5}),
-				},
-				ngon::Ball({0, 1.7})
-			};
 			playState = live;
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
