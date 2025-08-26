@@ -54,10 +54,12 @@
 	- (DONE) Always Init with a basic test level
 	  - achieve via play mode always writing some basic level geo to the application game state
 	- (TODO) Implement Play mode
-	- (TODO) Then implement the editor
+	- (DONE) Then implement the editor
         - (TODO) Stretch goals:
           - draw nearest selectable item with highlight, given input mode
           - control other shapes (Square, rectangle, pill shape, triangle, etc)
+		  - draw animated graphic on goal
+		  - draw star parallax background
 */
 
 constexpr auto AequalsB = 0;
@@ -376,8 +378,7 @@ namespace ngon {
 				}
 				
 			}
-			// yeah yeah, I know, we should use the State design pattern here.
-			// maybe later
+			// yeah yeah, I know, we should use the State design pattern here. maybe later.
 			// TODO refactor out these for loops, we're copy pasting the same for loop multiple times
 			if (app->GetMouse(m1).bPressed) {
 				double closestSq = std::numeric_limits<double>::infinity();
@@ -405,8 +406,8 @@ namespace ngon {
 				}
 				if (this->editState == EditState::polygonSelect) {
 					// There are two ways we could do this
-					// 1: select poly whose 'center of mass' is closest to the mouse pos
-					// 2: select poly that has the vertex which is closest to the mouse pos
+					// [ ] 1: select poly whose 'center of mass' is closest to the mouse pos
+					// [x] 2: select poly that has the vertex which is closest to the mouse pos
 					for (const Polygon& poly : app->state.shapes) {
 						for (const olc::vd2d& p : poly.points) {
 							double dist = (p - mousePosInWorld).mag2();
@@ -441,8 +442,7 @@ namespace ngon {
 			return true;
 		}
 		std::string GetStateString() override {
-			// TODO based on the selected item, update contextual help string.
-			std::string one = editState == placingPoints ? "[[1]]" : " [1] "; // DRY believers in disbelief right now
+			std::string one = editState == placingPoints ? "[[1]]" : " [1] "; // D.R.Y. believers in disbelief right now - coping
 			std::string two = editState == movePoints ? "[[2]]" : " [2] ";
 			std::string three = editState == placeBall ? "[[3]]" : " [3] ";
 			std::string four = editState == placeExit ? "[[4]]" : " [4] ";
@@ -534,6 +534,7 @@ namespace ngon {
 				tickGoal(goal, fElapsedTime);
 			}
 			if (playState == PlayState::victory_end) {
+				// TODO draw on top, text currently hidden behind level geometry
 				app->DrawString(app->GetScreenSize() / 2, "You won!\nPress backspace to restart\nPress Esc to return to editor.");
 			}
 			return true;
@@ -560,7 +561,7 @@ namespace ngon {
 						continue;
 					}
 					olc::vd2d normalizedCollisionNormal = collisionNormal.norm();
-					/* LLM GENERATED CODE */ // Something to get started, still not working correctly - will need re-write
+					/* LLM GENERATED CODE */ // Something to get started, still not working correctly - TODO will need re-write
 					auto relativeVelocity = ball.velocity.dot(normalizedCollisionNormal);
 					if (relativeVelocity > 0.0) {
 						// Ball is moving away from the line segment.
