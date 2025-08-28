@@ -208,6 +208,7 @@ public:
 	ngon::Editing* editing;
 	ngon::ApplicationState* applicationState;
 	olc::TransformedView view;
+	bool drawGameState = true;
 
 
 public:
@@ -653,6 +654,9 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 		}
 		applicationState->OnStateStart();
 	}
+	if (PixelGameEngine::GetKey(olc::Key::EQUALS).bReleased) {
+		drawGameState = !drawGameState;
+	}
 	// handle panning
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
@@ -662,7 +666,9 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	std::string stStr = applicationState->GetStateString();
 	int vertOffset = (int) std::count(stStr.begin(), stStr.end(), '\n');
 	PixelGameEngine::DrawString({ 0,0 }, stStr);
-	PixelGameEngine::DrawString({ 0, 10 + (vertOffset * 10) }, ngon::StringFromGameState(&this->state));
+	if (this->drawGameState) {
+		PixelGameEngine::DrawString({ 0, 10 + (vertOffset * 10) }, ngon::StringFromGameState(&this->state));
+	}
 	// Polygons
 	for (const auto &poly : this->state.shapes) {
 		const size_t numbPoints = poly.points.size();
