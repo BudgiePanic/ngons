@@ -165,10 +165,14 @@ namespace ngon {
 		bool BallLineIntersect(const olc::vd2d& start, const olc::vd2d& end, olc::vd2d& v) const {
 			olc::vd2d endStart = end - start;
 			double t = (position - start).dot(endStart) / endStart.dot(endStart);
-			if (t < 0.0 || t > 1.0) {
-				return false;
+			olc::vd2d closest; 
+			if (t < 0.0) {
+				closest = start;
+			} else if (t > 1.0) {
+				closest = end;
+			} else {
+				closest = start + endStart * t;
 			}
-			olc::vd2d closest = start + endStart * t;
 			olc::vd2d lineToBall = position - closest; // TODO are these the right way around?
 			v = lineToBall;
 			double distanceSquared = lineToBall.mag2();
