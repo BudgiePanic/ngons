@@ -720,11 +720,11 @@ bool NgonPuzzle::OnUserCreate() {
 
 	view.Initialise(GetScreenSize());
 	olc::vi2d viewArea(GetScreenSize());
-	viewArea.x = -viewArea.x / 2.0;
-	viewArea.y = viewArea.y / 2.0;
+	auto zoom = 40.0f;
+	viewArea.x = -viewArea.x / (zoom * 2.0);
+	viewArea.y = viewArea.y / (zoom * 2.0);
 	view.SetWorldOffset(viewArea);
-	view.SetWorldScale({1,-1});
-	// TODO help wanted - zoom in. Initial zoom is insufficient.
+	view.SetWorldScale({zoom,-zoom});
 
 	editing = new ngon::Editing(this);
 	applicationState = editing;
