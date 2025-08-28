@@ -68,7 +68,7 @@ constexpr auto AequalsB = 0;
 constexpr auto AisBigger = 1;
 constexpr auto BisBigger = -1;
 inline static int CompareFloat(const double a, const double b) {
-	if (fabs(a - b) < DBL_EPSILON) return AequalsB;
+	if (fabs(a - b) < 0.0001) return AequalsB;
 	if (a < b) return BisBigger;
 	return AisBigger;
 }
@@ -554,7 +554,7 @@ namespace ngon {
 			// force from drag
 			olc::vd2d dragForce = {0,0};
 			const double speedSquared = ball.velocity.mag2();
-			constexpr double ballFrontArea = 0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius;
+			double ballFrontArea = 0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius;
 			double dragForceMagnitude = ball.dragCoefficient * speedSquared * ballFrontArea;
 			if (CompareFloat(speedSquared, 0) != AequalsB) {
 				// zero speed? magnitude is zero, normalizing vector involves division by magnitude
