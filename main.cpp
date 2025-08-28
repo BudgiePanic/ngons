@@ -547,6 +547,26 @@ namespace ngon {
 		// putting the tick here so the ball and goal don't need a reference back to the state
 		void tickBall(Ball& ball, float fElapsedTime) {
 			ball.netForce = {0,0};
+			// update angular displacement, velocity
+			ball.angularDisplacement += ball.angularVelocity * fElapsedTime;
+			// force due to gravity
+			ball.netForce += olc::vd2d{ 0, ball.mass * -3};
+			// force from drag
+			olc::vd2d dragForce = {0,0};
+			const double speedSquared = ball.velocity.mag2();
+			constexpr double ballFrontArea = 0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius;
+			double dragForceMagnitude = ball.dragCoefficient * speedSquared * ballFrontArea;
+			if (CompareFloat(speedSquared, 0) != AequalsB) {
+				// zero speed? magnitude is zero, normalizing vector involves division by magnitude
+				// avoid divide by zero
+				dragForce = -(ball.velocity.norm()) * dragForceMagnitude;
+			}
+			ball.netForce += dragForce;
+			// update velocity
+			olc::vd2d netAcceleration = ball.netForce / ball.mass;
+			ball.velocity += netAcceleration * fElapsedTime;
+
+			ball.position += ball.velocity * fElapsedTime;
 			/* 
 			TODO in the future this could be sped up in various ways
 			Each polygon can be enveloped in a bounding sphere, check for sphere overlap 
@@ -612,18 +632,6 @@ namespace ngon {
 					ball.position += (ball.radius - collisionNormal.mag()) * normalizedCollisionNormal;
 				}
 			}
-			// update angular displacement, velocity
-			ball.angularDisplacement += ball.angularVelocity * fElapsedTime;
-			// force due to gravity
-			ball.netForce += olc::vd2d{ 0, ball.mass * -3};
-			// force from drag
-			ball.netForce += ball.dragCoefficient * (ball.velocity * ball.velocity) * (0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius);
-			// update velocity
-			olc::vd2d netAcceleration = ball.netForce / ball.mass;
-			ball.velocity += netAcceleration * fElapsedTime;
-
-			ball.position += ball.velocity * fElapsedTime;
-			// If ball is rubbing on a surface, use friction to convert some angular angual velocity into tangential velocity
 			ball.wantsToImpulse = false;
 		}
 
