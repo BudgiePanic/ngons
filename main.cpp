@@ -177,9 +177,6 @@ namespace ngon {
 			olc::vd2d lineToBall = position - closest;
 			v = lineToBall;
 			double distanceSquared = lineToBall.mag2();
-			drawer->DrawCircle({ 0,0 }, 0.05);
-			drawer->DrawLine(closest, position, distanceSquared < (radius * radius) ? olc::RED : olc::WHITE);// TEMP
-			drawer->Draw(lineToBall, olc::GREEN);
 			return distanceSquared < (radius * radius);
 		}
 	};
@@ -445,16 +442,6 @@ namespace ngon {
 			if (editMade)
 				this->memento = app->state;
 
-			// TEMP DEBUG
-			const Polygon& poly = app->state.shapes[0];
-			for (int idx = 0; idx < poly.numbSegments(); idx++) {
-				olc::vd2d collisionNormal = {};
-				olc::vd2d start, end;
-				if (!poly.getSegmentPoints(idx, start, end)) {
-					continue;
-				}
-				app->state.ball.BallLineIntersect(start, end, collisionNormal);
-			}
 			return true;
 		}
 		std::string GetStateString() override {
