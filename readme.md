@@ -46,6 +46,8 @@ I used ChatGPT to ask questions about C++ language features, some concrete examp
 - How to inline initialize a struct
 - How to make purely virtual class
 
+The algorithm for resolving physics impulses in version 1.0.0 was provided by ChatGPT in psuedo code form. This is clearly marked in source code comments.
+
 These could have been answered by Google Search I guess, but LLMs allow for fast follow up questions.
 
 All source code was written by me through physical key tapping :D
