@@ -548,8 +548,6 @@ namespace ngon {
 		// putting the tick here so the ball and goal don't need a reference back to the state
 		void tickBall(Ball& ball, float fElapsedTime) {
 			ball.netForce = {0,0};
-			// update angular displacement, velocity
-			ball.angularDisplacement += ball.angularVelocity * fElapsedTime;
 			// force due to gravity
 			ball.netForce += olc::vd2d{ 0, ball.mass * -3};
 			// force from drag
@@ -630,6 +628,8 @@ namespace ngon {
 					ball.position += (ball.radius - collisionNormal.mag()) * normalizedCollisionNormal;
 				}
 			}
+			// update angular displacement
+			ball.angularDisplacement += ball.angularVelocity * fElapsedTime;
 			ball.wantsToImpulse = false;
 		}
 
