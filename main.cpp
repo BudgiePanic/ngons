@@ -214,7 +214,7 @@ public:
 	ngon::Editing* editing;
 	ngon::ApplicationState* applicationState;
 	olc::TransformedView view;
-	bool drawGameState = true;
+	bool drawGameState = false;
 
 
 public:
