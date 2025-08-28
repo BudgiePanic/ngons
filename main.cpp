@@ -61,6 +61,7 @@
 		  - draw animated graphic on goal
 		  - draw star parallax background
 		  - tweak physics to be more fun. Currently ball doesn't get much traction on steep surface.
+		    - collisions can cause unexpected velocity changes
 */
 
 constexpr auto AequalsB = 0;
