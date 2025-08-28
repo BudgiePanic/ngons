@@ -131,6 +131,7 @@ namespace ngon {
 		olc::vd2d position;
 		olc::vd2d velocity = {};
 		olc::vd2d netForce = {};
+		olc::TransformedView* drawer = nullptr; // TEMP for debugging
 		/**
 		* rotational velocity in radians per second
 		* +ve ang vel results in CCW rotation
@@ -176,6 +177,9 @@ namespace ngon {
 			olc::vd2d lineToBall = position - closest; // TODO are these the right way around?
 			v = lineToBall;
 			double distanceSquared = lineToBall.mag2();
+			drawer->DrawCircle({ 0,0 }, 0.05);
+			drawer->DrawLine(closest, position, distanceSquared < (radius * radius) ? olc::RED : olc::WHITE);// TEMP
+			drawer->Draw(lineToBall, olc::GREEN);
 			return distanceSquared < (radius * radius);
 		}
 	};
@@ -274,6 +278,7 @@ namespace ngon {
 				ngon::Ball({0, 1.7}),
 				nullptr
 			};
+			memento.ball.drawer = &app->view;
 		}
 		ngon::GameState memento;
 		enum EditState {
