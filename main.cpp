@@ -560,7 +560,9 @@ namespace ngon {
 				for (int idx = 0; idx < poly.numbSegments(); idx++) {
 					olc::vd2d collisionNormal = {};
 					olc::vd2d start, end;
-					poly.getSegmentPoints(idx, start, end);
+					if (!poly.getSegmentPoints(idx, start, end)) {
+						continue;
+					}
 					if (!ball.BallLineIntersect(start, end, collisionNormal)) { 
 						continue;
 					}
