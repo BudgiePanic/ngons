@@ -520,7 +520,7 @@ namespace ngon {
 			);
 			// handle user input
 			if (this->playState == live) {
-				auto angularAcceleration = 2.0 * std::numbers::pi;
+				auto angularAcceleration = 3 * (2.0 * std::numbers::pi);
 				if (app->GetKey(olc::Key::A).bHeld) {
 					app->state.ball.angularVelocity += angularAcceleration * fElapsedTime;
 				}
