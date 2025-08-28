@@ -53,13 +53,14 @@
           - play: [a] go left [d] go right [space] jump | [esc] back to editor | [backspace] restart | ball params { ... }
 	- (DONE) Always Init with a basic test level
 	  - achieve via play mode always writing some basic level geo to the application game state
-	- (TODO) Implement Play mode
+	- (DONE) Implement Play mode
 	- (DONE) Then implement the editor
         - (TODO) Stretch goals:
           - draw nearest selectable item with highlight, given input mode
           - control other shapes (Square, rectangle, pill shape, triangle, etc)
 		  - draw animated graphic on goal
 		  - draw star parallax background
+		  - tweak physics to be more fun. Currently ball doesn't get much traction on steep surface.
 */
 
 constexpr auto AequalsB = 0;
