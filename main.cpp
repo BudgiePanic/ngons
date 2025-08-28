@@ -189,7 +189,7 @@ namespace ngon {
 		static constexpr double radius = 0.5;
 		bool GoalBallOverlap(const Ball& ball) const {
 			// if the distance between the ball and the goal is less than their two radii combined, then they have overlapped
-			return (position - ball.position).mag2() < ((radius * radius) + (ball.radius * ball.radius));
+			return (position - ball.position).mag2() < ((radius + ball.radius) * (radius + ball.radius));
 		}
 	};
 	struct GameState {
