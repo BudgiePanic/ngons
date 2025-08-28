@@ -148,10 +148,10 @@ namespace ngon {
 		* How 'bouncy' the ball is. Magic number for ball encountering elastic collisions.
 		* Tells us what % of ball kinetic energy is maintained in a collision.
 		*/
-		static constexpr double elasticity = 0.3;
+		static constexpr double elasticity = 0.2;
 		static constexpr double radius = 0.5;
 		static constexpr double mass = 5.0;
-		static constexpr double frictionCoefficient = 0.85;
+		static constexpr double frictionCoefficient = 0.95;
 		static constexpr double dragCoefficient = 0.47;
 		static constexpr double inertiaMoment = (2.0 / 5.0) * mass * radius * radius;
 		bool pointInBall(const olc::vd2d& point) const {
