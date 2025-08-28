@@ -444,6 +444,17 @@ namespace ngon {
 			// Update the memento
 			if (editMade)
 				this->memento = app->state;
+
+			// TEMP DEBUG
+			const Polygon& poly = app->state.shapes[0];
+			for (int idx = 0; idx < poly.numbSegments(); idx++) {
+				olc::vd2d collisionNormal = {};
+				olc::vd2d start, end;
+				if (!poly.getSegmentPoints(idx, start, end)) {
+					continue;
+				}
+				app->state.ball.BallLineIntersect(start, end, collisionNormal);
+			}
 			return true;
 		}
 		std::string GetStateString() override {
