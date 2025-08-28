@@ -174,7 +174,7 @@ namespace ngon {
 			} else {
 				closest = start + endStart * t;
 			}
-			olc::vd2d lineToBall = position - closest; // TODO are these the right way around?
+			olc::vd2d lineToBall = position - closest;
 			v = lineToBall;
 			double distanceSquared = lineToBall.mag2();
 			drawer->DrawCircle({ 0,0 }, 0.05);
