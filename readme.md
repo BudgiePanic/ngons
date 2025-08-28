@@ -4,6 +4,10 @@
 
 My entry for the 2025 OLC code jam. Simple puzzle game. Control a sphere shape, try to reach the exit. Includes level editor, build your own level.
 
+## Play
+
+You can play Ngons on Itch.io in your web browser thanks to emscripten WASM compilation. [Game page link](https://budgiepanic.itch.io/ngon).
+
 ## Controls
 
 ### Editor
