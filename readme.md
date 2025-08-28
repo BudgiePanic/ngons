@@ -33,7 +33,7 @@ My entry for the 2025 OLC code jam. Simple puzzle game. Control a sphere shape, 
 ### Gameplay
 
 - A: Roll to the left
-- B: Roll to the right
+- D: Roll to the right
 - Space: Jump (while touching a surface)
 - equals (=): print ball physics state
 - Escape: return to the editor
