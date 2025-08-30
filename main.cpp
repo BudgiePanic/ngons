@@ -6,6 +6,7 @@
 #include "olcPGEX_TransformedView.h"
 #include <Math.h>
 #include <numbers>
+#include <random>
 
 /**
 * Application controls:
@@ -182,15 +183,58 @@ namespace ngon {
 			return distanceSquared < (radius * radius);
 		}
 	};
+	std::minstd_rand generator;
+	std::uniform_real_distribution<double> random(0, 1);
 	class Goal {
 	public:
-		Goal() = default;
-		Goal(olc::vd2d pos) : position(pos) { }
-		olc::vd2d position;
 		static constexpr double radius = 0.5;
+	protected:
+		double a = 0.0, b = 1.0;
+		constexpr static double maxRpm = 2.0;
+		constexpr static double minSpeed = 0.1;
+		constexpr static double maxSpeed = radius;
+		void InitParticles() {
+			for (int i = 0; i < numbParticles; i++) {
+				particleAngle[i] = random(generator) * 2.0 * std::numbers::pi;
+				particleDistance[i] = radius;
+				particleSpeed[i] = minSpeed + random(generator) * (radius - minSpeed);
+				particleAngularSpeed[i] = maxRpm * random(generator) * 2.0 * std::numbers::pi;
+			}
+		}
+	public:
+		Goal() {
+			InitParticles();
+		};
+		Goal(olc::vd2d pos) : position(pos) {
+			InitParticles();
+		}
+		olc::vd2d position;
+		static constexpr int numbParticles = 15;
+		/**
+		* Particle angle in radians
+		*/
+		double particleAngle[numbParticles] = {};
+		/**
+		* Value between zero and Goal::radius
+		*/
+		double particleDistance[numbParticles] = {};
+		double particleAngularSpeed[numbParticles] = {};
+		double particleSpeed[numbParticles] = {};
 		bool GoalBallOverlap(const Ball& ball) const {
 			// if the distance between the ball and the goal is less than their two radii combined, then they have overlapped
 			return (position - ball.position).mag2() < ((radius + ball.radius) * (radius + ball.radius));
+		}
+		void updateParticles(float fElapsedTime) {
+			for (int i = 0; i < numbParticles; i++) {
+				particleAngle[i] += fElapsedTime * particleAngularSpeed[i];
+				particleDistance[i] -= fElapsedTime * particleSpeed[i];
+				if (particleDistance[i] <= 0.0) {
+					particleAngle[i] = random(generator) * 2.0 * std::numbers::pi;
+					particleDistance[i] = radius;
+					particleSpeed[i] = minSpeed + random(generator) * (radius - minSpeed);
+					particleAngularSpeed[i] = maxRpm * random(generator) * 2.0 * std::numbers::pi;
+				}
+			}
 		}
 	};
 	struct GameState {
@@ -649,7 +693,7 @@ namespace ngon {
 					this->playState = victory_end;
 				}
 			}
-			// TODO animated over time properties can be updated here
+			goal.updateParticles(fElapsedTime);
 		}
 	};
 }
@@ -709,9 +753,18 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	};
 	view.DrawCircle(miniPos + state.ball.position, state.ball.rScale * state.ball.radius * 0.20, olc::WHITE);
 	// Goals
-	// TODO make the goals look cooler with some animated property that changes over time
 	for (const ngon::Goal& goal : state.goals) {
 		view.DrawCircle(goal.position, goal.radius, olc::DARK_MAGENTA);
+		for (int i = 0; i < ngon::Goal::numbParticles; i++) {
+			olc::vd2d pos = {
+				goal.particleDistance[i] * cos(goal.particleAngle[i]),
+				goal.particleDistance[i] * sin(goal.particleAngle[i])
+			};
+			pos += goal.position;
+			view.Draw(pos, 
+				olc::PixelLerp(olc::BLACK, olc::DARK_MAGENTA, goal.particleDistance[i]/goal.radius)
+			);
+		}
 	}
 	return true;
 }
