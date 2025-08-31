@@ -596,7 +596,7 @@ namespace ngon {
 			return true;
 		}
 		std::string GetStateString() override {
-			return std::format("Playing: {}\n[A] roll left [D] roll right\n[ESC] open editor [backspace] restart", PlayStateToString(this->playState));
+			return std::format("Playing: {}\n[A] roll left [D] roll right [SPACE] jump\n[ESC] open editor [backspace] restart", PlayStateToString(this->playState));
 		}
 		// putting the tick here so the ball and goal don't need a reference back to the state
 		void tickBall(Ball& ball, float fElapsedTime) {
