@@ -550,8 +550,10 @@ namespace ngon {
 			}
 		}
 		PlayState playState = live;
+		double victoryRotationSpeed;
 		void OnStateStart() override {
 			playState = live;
+			victoryRotationSpeed = 1.0 + (3.0 * ngon::random(generator));
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
 			if (app->GetKey(olc::Key::BACK).bPressed) {
@@ -685,10 +687,20 @@ namespace ngon {
 			} else if (playState == victory_anim_seq && app->state.attractor == &goal) {
 				constexpr double ballSpeed = 0.4;
 				constexpr double smallEnough = 0.01;
+				double angleDelta = this->victoryRotationSpeed * fElapsedTime;
 				Ball& ball = app->state.ball;
-				olc::vd2d nextPos = ball.position.lerp(goal.position, 1.0 - ball.rScale);
+				// move ball towards goal center
+				ball.position += (goal.position - ball.position) * fElapsedTime * ball.rScale;
+				// rotate ball about the goal
+				olc::vd2d relative = (ball.position - goal.position);
+				double c = cos(angleDelta), s = sin(angleDelta);
+				olc::vd2d rotated = {
+					(relative.x * c) - (relative.y * s),
+					(relative.x * s) + (relative.y * c)
+				};
+				rotated += goal.position;
 				ball.rScale -= ballSpeed * fElapsedTime;
-				ball.position = nextPos;
+				ball.position = rotated;
 				if (app->state.ball.rScale < smallEnough) {
 					this->playState = victory_end;
 				}
