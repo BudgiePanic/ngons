@@ -528,6 +528,7 @@ namespace ngon {
 	class Playing : public ApplicationState {
 	public:
 		Playing(NgonPuzzle* app) : ApplicationState(app) {
+			victoryRotationSpeed = 0.0;
 		}
 		enum PlayState {
 			paused,
