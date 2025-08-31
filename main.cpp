@@ -553,7 +553,7 @@ namespace ngon {
 		double victoryRotationSpeed;
 		void OnStateStart() override {
 			playState = live;
-			victoryRotationSpeed = 1.0 + (3.0 * ngon::random(generator));
+			victoryRotationSpeed = std::numbers::pi + (ngon::random(generator) * std::numbers::pi);
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
 			if (app->GetKey(olc::Key::BACK).bPressed) {
@@ -690,7 +690,7 @@ namespace ngon {
 				double angleDelta = this->victoryRotationSpeed * fElapsedTime;
 				Ball& ball = app->state.ball;
 				// move ball towards goal center
-				ball.position += (goal.position - ball.position) * fElapsedTime * ball.rScale;
+				ball.position += (goal.position - ball.position) * (1.0 / (ball.rScale) * fElapsedTime);
 				// rotate ball about the goal
 				olc::vd2d relative = (ball.position - goal.position);
 				double c = cos(angleDelta), s = sin(angleDelta);
