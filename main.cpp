@@ -6,6 +6,7 @@
 #include "olcPGEX_TransformedView.h"
 #include <Math.h>
 #include <numbers>
+#include <random>
 
 /**
 * Application controls:
@@ -58,8 +59,8 @@
         - (TODO) Stretch goals:
           - draw nearest selectable item with highlight, given input mode
           - control other shapes (Square, rectangle, pill shape, triangle, etc)
-		  - draw animated graphic on goal
-		  - draw star parallax background
+		  - (DONE) draw animated graphic on goal
+		  - (DONE) draw star parallax background
 		  - tweak physics to be more fun. Currently ball doesn't get much traction on steep surface.
 		    - collisions can cause unexpected velocity changes
 */
@@ -68,7 +69,7 @@ constexpr auto AequalsB = 0;
 constexpr auto AisBigger = 1;
 constexpr auto BisBigger = -1;
 inline static int CompareFloat(const double a, const double b) {
-	if (fabs(a - b) < DBL_EPSILON) return AequalsB;
+	if (fabs(a - b) < 0.0001) return AequalsB;
 	if (a < b) return BisBigger;
 	return AisBigger;
 }
@@ -182,15 +183,58 @@ namespace ngon {
 			return distanceSquared < (radius * radius);
 		}
 	};
+	std::minstd_rand generator;
+	std::uniform_real_distribution<double> random(0, 1);
 	class Goal {
 	public:
-		Goal() = default;
-		Goal(olc::vd2d pos) : position(pos) { }
-		olc::vd2d position;
 		static constexpr double radius = 0.5;
+	protected:
+		double a = 0.0, b = 1.0;
+		constexpr static double maxRpm = 2.0;
+		constexpr static double minSpeed = 0.1;
+		constexpr static double maxSpeed = radius;
+		void InitParticles() {
+			for (int i = 0; i < numbParticles; i++) {
+				particleAngle[i] = random(generator) * 2.0 * std::numbers::pi;
+				particleDistance[i] = radius;
+				particleSpeed[i] = minSpeed + random(generator) * (radius - minSpeed);
+				particleAngularSpeed[i] = maxRpm * random(generator) * 2.0 * std::numbers::pi;
+			}
+		}
+	public:
+		Goal() {
+			InitParticles();
+		};
+		Goal(olc::vd2d pos) : position(pos) {
+			InitParticles();
+		}
+		olc::vd2d position;
+		static constexpr int numbParticles = 15;
+		/**
+		* Particle angle in radians
+		*/
+		double particleAngle[numbParticles] = {};
+		/**
+		* Value between zero and Goal::radius
+		*/
+		double particleDistance[numbParticles] = {};
+		double particleAngularSpeed[numbParticles] = {};
+		double particleSpeed[numbParticles] = {};
 		bool GoalBallOverlap(const Ball& ball) const {
 			// if the distance between the ball and the goal is less than their two radii combined, then they have overlapped
 			return (position - ball.position).mag2() < ((radius + ball.radius) * (radius + ball.radius));
+		}
+		void updateParticles(float fElapsedTime) {
+			for (int i = 0; i < numbParticles; i++) {
+				particleAngle[i] += fElapsedTime * particleAngularSpeed[i];
+				particleDistance[i] -= fElapsedTime * particleSpeed[i];
+				if (particleDistance[i] <= 0.0) {
+					particleAngle[i] = random(generator) * 2.0 * std::numbers::pi;
+					particleDistance[i] = radius;
+					particleSpeed[i] = minSpeed + random(generator) * (radius - minSpeed);
+					particleAngularSpeed[i] = maxRpm * random(generator) * 2.0 * std::numbers::pi;
+				}
+			}
 		}
 	};
 	struct GameState {
@@ -216,11 +260,16 @@ public:
 	ngon::ApplicationState* applicationState;
 	olc::TransformedView view;
 	bool drawGameState = false;
-
+	constexpr static double bgCellSize = 1;
 
 public:
 	bool OnUserCreate() override;
 	bool OnUserUpdate(float fElapsedTime) override;
+protected:
+	struct bgCells {
+		int minX, minY, maxX, maxY;
+	};
+	void ViewToCells(bgCells& cellExtent) const;
 };
 
 namespace ngon {
@@ -484,6 +533,7 @@ namespace ngon {
 	class Playing : public ApplicationState {
 	public:
 		Playing(NgonPuzzle* app) : ApplicationState(app) {
+			victoryRotationSpeed = 0.0;
 		}
 		enum PlayState {
 			paused,
@@ -506,13 +556,15 @@ namespace ngon {
 			}
 		}
 		PlayState playState = live;
+		double victoryRotationSpeed;
 		void OnStateStart() override {
 			playState = live;
+			victoryRotationSpeed = std::numbers::pi + (ngon::random(generator) * std::numbers::pi);
 		}
 		bool OnUserUpdate(float fElapsedTime) override {
 			if (app->GetKey(olc::Key::BACK).bPressed) {
 				app->state = app->editing->memento;
-				this->playState = PlayState::live;
+				this->OnStateStart();
 			}
 			// Set the view to center on the ball position
 			ngon::Ball& ball = this->app->state.ball;
@@ -544,7 +596,7 @@ namespace ngon {
 			return true;
 		}
 		std::string GetStateString() override {
-			return std::format("Playing: {}\n[A] roll left [D] roll right\n[ESC] open editor [backspace] restart", PlayStateToString(this->playState));
+			return std::format("Playing: {}\n[A] roll left [D] roll right [SPACE] jump\n[ESC] open editor [backspace] restart", PlayStateToString(this->playState));
 		}
 		// putting the tick here so the ball and goal don't need a reference back to the state
 		void tickBall(Ball& ball, float fElapsedTime) {
@@ -554,7 +606,7 @@ namespace ngon {
 			// force from drag
 			olc::vd2d dragForce = {0,0};
 			const double speedSquared = ball.velocity.mag2();
-			constexpr double ballFrontArea = 0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius;
+			double ballFrontArea = 0.5 * 4.0 * std::numbers::pi * ball.radius * ball.radius;
 			double dragForceMagnitude = ball.dragCoefficient * speedSquared * ballFrontArea;
 			if (CompareFloat(speedSquared, 0) != AequalsB) {
 				// zero speed? magnitude is zero, normalizing vector involves division by magnitude
@@ -641,20 +693,43 @@ namespace ngon {
 			} else if (playState == victory_anim_seq && app->state.attractor == &goal) {
 				constexpr double ballSpeed = 0.4;
 				constexpr double smallEnough = 0.01;
+				double angleDelta = this->victoryRotationSpeed * fElapsedTime;
 				Ball& ball = app->state.ball;
-				olc::vd2d nextPos = ball.position.lerp(goal.position, 1.0 - ball.rScale);
+				// move ball towards goal center
+				ball.position += (goal.position - ball.position) * (1.0 / (ball.rScale) * fElapsedTime);
+				// rotate ball about the goal
+				olc::vd2d relative = (ball.position - goal.position);
+				double c = cos(angleDelta), s = sin(angleDelta);
+				olc::vd2d rotated = {
+					(relative.x * c) - (relative.y * s),
+					(relative.x * s) + (relative.y * c)
+				};
+				rotated += goal.position;
 				ball.rScale -= ballSpeed * fElapsedTime;
-				ball.position = nextPos;
+				ball.position = rotated;
 				if (app->state.ball.rScale < smallEnough) {
 					this->playState = victory_end;
 				}
 			}
-			// TODO animated over time properties can be updated here
+			goal.updateParticles(fElapsedTime);
 		}
 	};
 }
 
 NgonPuzzle::NgonPuzzle() { sAppName = "Ngon puzzle builder"; }
+
+/* VIBE CODED WITH AI */
+static int Clamp(double value) {
+	return static_cast<int>(std::floor(value / NgonPuzzle::bgCellSize));
+}
+
+static inline double Thrash(int64_t x, int64_t y, int64_t z) {
+	constexpr uint64_t magicA = 0x45d9f3b, magicB = 0x45f9d3b, magicC = 0x34ad08b, magicD = 0x2d4012a;
+	uint64_t thrash = x * magicA ^ y * magicB ^ z * magicD;
+	thrash = (thrash ^ (thrash >> 13)) * 334875;
+	return (thrash & 0xFFFFFFFF) / double(0x100000000);
+}
+/* END OF VIBE CODED WITH AI */
 
 bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// Clear Screen
@@ -676,8 +751,33 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// handle panning
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
-	// stars background TODO stretch goal
-	
+	// stars background
+	/* VIBE CODED WITH AI */
+	// issues: stars will pop in/out near the edge of the view
+	//         This only happens when we adjust the xy pos of the star based on the star depth
+	//         You can see the effect exacerbated by zooming out and panning around.
+	//         Oh well, the effect looks good enough in my opinion.
+	constexpr int starsPerCell = 2;
+	bgCells cell = {};
+	ViewToCells(cell);
+	const olc::vf2d camMid = view.ScreenToWorld(GetScreenSize() / 2);
+	const olc::vf2d scale = view.GetWorldScale();
+	for (int x = cell.minX; x <= cell.maxX; x++) {
+		for (int y = cell.minY; y <= cell.maxY; y++) {
+			for (int i = 0; i < starsPerCell; i++) {
+				double sx, sy, sz;
+				sx = x * bgCellSize + Thrash(x,y,i) * bgCellSize;
+				sy = y * bgCellSize + Thrash(x,y,i+1) * bgCellSize;
+				sz = 0.2 + Thrash(x, y, i+3) * 0.8;
+				double px = sx - camMid.x * sz + camMid.x;
+				double py = sy - camMid.y * sz + camMid.y;
+				//px = sx; // no pop in/out
+				//py = sy; // no pop in/out
+				view.Draw(olc::vd2d{ px,py }, olc::PixelLerp(olc::BLACK, (olc::WHITE * 0.4), sz));
+			}
+		}
+	}
+	/* END OF VIBE CODED WITH AI */
 	// Status info
 	std::string stStr = applicationState->GetStateString();
 	int vertOffset = (int) std::count(stStr.begin(), stStr.end(), '\n');
@@ -709,16 +809,41 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	};
 	view.DrawCircle(miniPos + state.ball.position, state.ball.rScale * state.ball.radius * 0.20, olc::WHITE);
 	// Goals
-	// TODO make the goals look cooler with some animated property that changes over time
 	for (const ngon::Goal& goal : state.goals) {
 		view.DrawCircle(goal.position, goal.radius, olc::DARK_MAGENTA);
+		for (int i = 0; i < ngon::Goal::numbParticles; i++) {
+			olc::vd2d pos = {
+				goal.particleDistance[i] * cos(goal.particleAngle[i]),
+				goal.particleDistance[i] * sin(goal.particleAngle[i])
+			};
+			pos += goal.position;
+			view.Draw(pos, 
+				olc::PixelLerp(olc::BLACK, olc::DARK_MAGENTA, goal.particleDistance[i]/goal.radius)
+			);
+		}
 	}
 	return true;
 }
 
+/* VIBE CODED WITH AI */
+void NgonPuzzle::ViewToCells(bgCells& cellExtent) const {
+	const olc::vf2d tl = view.ScreenToWorld({0,0});
+	const olc::vf2d br = view.ScreenToWorld(GetScreenSize());
+	cellExtent.minX = Clamp(tl.x);
+	cellExtent.maxX = Clamp(br.x);
+	cellExtent.minY = Clamp(tl.y);
+	cellExtent.maxY = Clamp(br.y);
+	if (cellExtent.minX > cellExtent.maxX) {
+		std::swap(cellExtent.minX, cellExtent.maxX);
+	}
+	if (cellExtent.minY > cellExtent.maxY) {
+		std::swap(cellExtent.minY, cellExtent.maxY);
+	}
+}
+/* END OF VIBE CODED WITH AI */
+
 bool NgonPuzzle::OnUserCreate() {
 	// Called once at the start, so create things here
-
 	view.Initialise(GetScreenSize());
 	olc::vi2d viewArea(GetScreenSize());
 	auto zoom = 40.0f;
@@ -726,7 +851,6 @@ bool NgonPuzzle::OnUserCreate() {
 	viewArea.y = viewArea.y / (zoom * 2.0);
 	view.SetWorldOffset(viewArea);
 	view.SetWorldScale({zoom,-zoom});
-
 	editing = new ngon::Editing(this);
 	applicationState = editing;
 	applicationState->OnStateStart();

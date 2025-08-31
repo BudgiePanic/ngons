@@ -4,6 +4,10 @@
 
 My entry for the 2025 OLC code jam. Simple puzzle game. Control a sphere shape, try to reach the exit. Includes level editor, build your own level.
 
+## Play
+
+You can play Ngons on Itch.io in your web browser thanks to emscripten WASM compilation. [Game page link](https://budgiepanic.itch.io/ngon).
+
 ## Controls
 
 ### Editor
@@ -47,6 +51,7 @@ I used ChatGPT to ask questions about C++ language features, some concrete examp
 - How to make purely virtual class
 
 The algorithm for resolving physics impulses in version 1.0.0 was provided by ChatGPT in psuedo code form. This is clearly marked in source code comments.
+The star background routine in version 1.1.0 was vibe coded. The relevant code sections are clearly markes in source code comments.
 
 These could have been answered by Google Search I guess, but LLMs allow for fast follow up questions.
 
