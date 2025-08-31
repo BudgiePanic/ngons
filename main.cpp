@@ -60,7 +60,7 @@
           - draw nearest selectable item with highlight, given input mode
           - control other shapes (Square, rectangle, pill shape, triangle, etc)
 		  - (DONE) draw animated graphic on goal
-		  - draw star parallax background
+		  - (DONE) draw star parallax background
 		  - tweak physics to be more fun. Currently ball doesn't get much traction on steep surface.
 		    - collisions can cause unexpected velocity changes
 */
