@@ -260,11 +260,16 @@ public:
 	ngon::ApplicationState* applicationState;
 	olc::TransformedView view;
 	bool drawGameState = false;
-
+	constexpr static double bgCellSize = 1;
 
 public:
 	bool OnUserCreate() override;
 	bool OnUserUpdate(float fElapsedTime) override;
+protected:
+	struct bgCells {
+		int minX, minY, maxX, maxY;
+	};
+	void ViewToCells(bgCells& cellExtent) const;
 };
 
 namespace ngon {
@@ -713,6 +718,19 @@ namespace ngon {
 
 NgonPuzzle::NgonPuzzle() { sAppName = "Ngon puzzle builder"; }
 
+/* VIBE CODED WITH AI */
+static int Clamp(double value) {
+	return static_cast<int>(std::floor(value / NgonPuzzle::bgCellSize));
+}
+
+static inline double Thrash(int64_t x, int64_t y, int64_t z) {
+	constexpr uint64_t magicA = 0x45d9f3b, magicB = 0x45f9d3b, magicC = 0x34ad08b, magicD = 0x2d4012a;
+	uint64_t thrash = x * magicA ^ y * magicB ^ z * magicD;
+	thrash = (thrash ^ (thrash >> 13)) * 334875;
+	return (thrash & 0xFFFFFFFF) / double(0x100000000);
+}
+/* END OF VIBE CODED WITH AI */
+
 bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// Clear Screen
 	PixelGameEngine::Clear(olc::BLACK);
@@ -733,8 +751,33 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	// handle panning
 	applicationState->OnUserUpdate(fElapsedTime);
 	// Draw
-	// stars background TODO stretch goal
-	
+	// stars background
+	/* VIBE CODED WITH AI */
+	// issues: stars will pop in/out near the edge of the view
+	//         This only happens when we adjust the xy pos of the star based on the star depth
+	//         You can see the effect exacerbated by zooming out and panning around.
+	//         Oh well, the effect looks good enough in my opinion.
+	constexpr int starsPerCell = 2;
+	bgCells cell = {};
+	ViewToCells(cell);
+	const olc::vf2d camMid = view.ScreenToWorld(GetScreenSize() / 2);
+	const olc::vf2d scale = view.GetWorldScale();
+	for (int x = cell.minX; x <= cell.maxX; x++) {
+		for (int y = cell.minY; y <= cell.maxY; y++) {
+			for (int i = 0; i < starsPerCell; i++) {
+				double sx, sy, sz;
+				sx = x * bgCellSize + Thrash(x,y,i) * bgCellSize;
+				sy = y * bgCellSize + Thrash(x,y,i+1) * bgCellSize;
+				sz = 0.2 + Thrash(x, y, i+3) * 0.8;
+				double px = sx - camMid.x * sz + camMid.x;
+				double py = sy - camMid.y * sz + camMid.y;
+				//px = sx; // no pop in/out
+				//py = sy; // no pop in/out
+				view.Draw(olc::vd2d{ px,py }, olc::PixelLerp(olc::BLACK, (olc::WHITE * 0.4), sz));
+			}
+		}
+	}
+	/* END OF VIBE CODED WITH AI */
 	// Status info
 	std::string stStr = applicationState->GetStateString();
 	int vertOffset = (int) std::count(stStr.begin(), stStr.end(), '\n');
@@ -782,9 +825,25 @@ bool NgonPuzzle::OnUserUpdate(float fElapsedTime) {
 	return true;
 }
 
+/* VIBE CODED WITH AI */
+void NgonPuzzle::ViewToCells(bgCells& cellExtent) const {
+	const olc::vf2d tl = view.ScreenToWorld({0,0});
+	const olc::vf2d br = view.ScreenToWorld(GetScreenSize());
+	cellExtent.minX = Clamp(tl.x);
+	cellExtent.maxX = Clamp(br.x);
+	cellExtent.minY = Clamp(tl.y);
+	cellExtent.maxY = Clamp(br.y);
+	if (cellExtent.minX > cellExtent.maxX) {
+		std::swap(cellExtent.minX, cellExtent.maxX);
+	}
+	if (cellExtent.minY > cellExtent.maxY) {
+		std::swap(cellExtent.minY, cellExtent.maxY);
+	}
+}
+/* END OF VIBE CODED WITH AI */
+
 bool NgonPuzzle::OnUserCreate() {
 	// Called once at the start, so create things here
-
 	view.Initialise(GetScreenSize());
 	olc::vi2d viewArea(GetScreenSize());
 	auto zoom = 40.0f;
@@ -792,7 +851,6 @@ bool NgonPuzzle::OnUserCreate() {
 	viewArea.y = viewArea.y / (zoom * 2.0);
 	view.SetWorldOffset(viewArea);
 	view.SetWorldScale({zoom,-zoom});
-
 	editing = new ngon::Editing(this);
 	applicationState = editing;
 	applicationState->OnStateStart();
